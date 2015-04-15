@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <project name="NMS-DEPLOY" default="info">
+    <typedef file="./tomcatMacroDef.xml"/>
+    <typedef file="./utilDef.xml"/>
+
+    <property environment="env"/>
+    <property name="tomcat.home" value="${env.CATALINA_HOME}"/>
+    <property name="user.home" value="${env.HOME}"/>
+    <target name="url">
+         <copy todir="/home/vagrant/test" flatten="true" overwrite="true">
+                <resources>
+                        <url url="http://10.204.23.177:8081/nexus/content/repositories/nms/0.1-SNAPSHOT/frontlineworker-0.1-SNAPSHOT.jar"/>
+                </resources>
+         </copy>
+    </target>  
+    
+    <target name="get.remote">
+      <get dest="/home/vagrant/motech-platform-server.war" verbose="true">
+	    <url url="http://10.204.23.177:8081/nexus/content/repositories/motech/motech-platform-server.war"/>
+      </get>
+    </target>
+    <target name="nms.deploy.motech">
+        <echo> "The Value of "</echo>
+        <echo>CARAL=${tomcat.home}</echo>
+        <stop.tomcat tomcat.home="${tomcat.home}"/>
+        <!-- Lets copy property file from location -->
+        <mkdir dir= "${user.home}/.motech"/>
+        <mkdir dir= "${user.home}/.motech/config"/>
+        <mkdir dir= "${user.home}/.motech/bundles"/>
+        <copy.remote name="motech-platform-server" location="http://10.204.23.177:8081/nexus/content/repositories/motech/motech-platform-server.war"
+          download.dir="/home/vagrant" app.ext ="war"/>
+        <copy file ="/home/vagrant/motech-platform-server.war" todir="${tomcat.home}/webapps" flatten="true" overwrite="true"/>
+        <scp file="grameen:abc123@10.203.10.1:/home/grameen/.motech/config/*.properties" todir="${user.home}/.motech/config" trust="yes" />
+        <start.tomcat tomcat.home="${tomcat.home}"/>
+       
+    </target>
+ </project>

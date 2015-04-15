@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<antlib>
+	<macrodef name="copy.remote">
+        <attribute name="name"/>
+        <attribute name="location"/>
+        <attribute name="download.dir"/>
+        <attribute name="app.ext" default="jar" />
+	 <sequential>
+            <get dest="@{download.dir}/@{name}.@{app.ext}" verbose="true">
+                <resources>              
+                    <url url="@{location}"/>
+                </resources>
+            </get>
+        </sequential>
+	</macrodef>
+
+	<macrodef name="copy.local">
+        <attribute name="name"/>
+        <attribute name="target"/>
+        <attribute name="srcdir"/>
+        <attribute name="app.ext" default="jar" />
+	 <sequential>
+            <copy file="@{srcdir}/@{name}.@{app.ext}" todir= "@target" flatten="true" overwrite="true">
+            </copy>
+        </sequential>
+	</macrodef>
+</antlib>

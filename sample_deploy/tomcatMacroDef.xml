@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<antlib>
+    <macrodef name="stop.tomcat">
+    <attribute name="tomcat.home"/>
+        <sequential>
+            <echo message="Stopping tomcat..."/>
+            <exec executable="bash" dir="@{tomcat.home}" output="dr.txt">
+                <arg line="@{tomcat.home}/bin/shutdown.sh"/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="start.tomcat">
+        <attribute name="tomcat.home"/>
+        <sequential>
+            <echo message="Starting tomcat..."/>
+            <exec executable="bash" dir="@{tomcat.home}" output="dr.txt">
+                <arg line="@{tomcat.home}/bin/startup.sh"/>
+            </exec>
+        </sequential>
+    </macrodef>
+</antlib>
