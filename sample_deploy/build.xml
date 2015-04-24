@@ -6,32 +6,60 @@
     <property environment="env"/>
     <property name="tomcat.home" value="${env.CATALINA_HOME}"/>
     <property name="user.home" value="${env.HOME}"/>
-    <target name="url">
-         <copy todir="/home/vagrant/test" flatten="true" overwrite="true">
-                <resources>
-                        <url url="http://10.204.23.177:8081/nexus/content/repositories/nms/0.1-SNAPSHOT/frontlineworker-0.1-SNAPSHOT.jar"/>
-                </resources>
-         </copy>
-    </target>  
     
-    <target name="get.remote">
-      <get dest="/home/vagrant/motech-platform-server.war" verbose="true">
-	    <url url="http://10.204.23.177:8081/nexus/content/repositories/motech/motech-platform-server.war"/>
-      </get>
+    <target name="nms.stop">
+       <echo> "######################Motech STOP *************************** "</echo>
+      <stop.tomcat tomcat.home="${tomcat.home}"/>
+       <echo> "######################Motech STOPPED *************************** "</echo>
     </target>
     <target name="nms.deploy.motech">
-        <echo> "The Value of "</echo>
+        <echo> "######################Motech Deployment START *************************** "</echo>
         <echo>CARAL=${tomcat.home}</echo>
         <stop.tomcat tomcat.home="${tomcat.home}"/>
         <!-- Lets copy property file from location -->
         <mkdir dir= "${user.home}/.motech"/>
         <mkdir dir= "${user.home}/.motech/config"/>
         <mkdir dir= "${user.home}/.motech/bundles"/>
+        <mkdir dir= "/tmp/motech"/>
         <copy.remote name="motech-platform-server" location="http://10.204.23.177:8081/nexus/content/repositories/motech/motech-platform-server.war"
-          download.dir="/home/vagrant" app.ext ="war"/>
-        <copy file ="/home/vagrant/motech-platform-server.war" todir="${tomcat.home}/webapps" flatten="true" overwrite="true"/>
-        <scp file="grameen:abc123@10.203.10.1:/home/grameen/.motech/config/*.properties" todir="${user.home}/.motech/config" trust="yes" />
+          download.dir="/tmp/motech" app.ext ="war"/>
+        <copy.remote name="bootstrap" location="http://10.204.23.177:8081/nexus/content/repositories/motech/properties/bootstrap.properties"
+          download.dir="/tmp/motech" app.ext ="properties"/>
+        <copy.remote name="log4j" location="http://10.204.23.177:8081/nexus/content/repositories/motech/properties/log4j.properties"
+          download.dir="/tmp/motech" app.ext ="properties"/>
+        <copy.remote name="motech-settings" location="http://10.204.23.177:8081/nexus/content/repositories/motech/properties/motech-settings.properties"
+          download.dir="/tmp/motech" app.ext ="properties"/>
+        <copy file ="/tmp/motech/motech-settings.properties"  todir="${user.home}/.motech/config" flatten="true" overwrite="true"/>
+        <copy file ="/tmp/motech/bootstrap.properties"  todir="${user.home}/.motech/config" flatten="true" overwrite="true"/>
+        <copy file ="/tmp/motech/log4j.properties"  todir="${user.home}/.motech/config" flatten="true" overwrite="true"/>     
+        <copy file ="/tmp/motech/motech-platform-server.war" todir="${tomcat.home}/webapps" flatten="true" overwrite="true"/>
         <start.tomcat tomcat.home="${tomcat.home}"/>
-       
+        <echo> "######################Motech Deployment STOP *************************** "</echo>
     </target>
+    <target name="remote.file.transfer">
+       <echo> Transfering to ${ip}</echo>
+       <scp todir="${username}:${password}@${ip}:${target}"  trust="yes" >
+            <fileset dir="${srcdir}">
+      		<include name="**/*.xml"/>
+    	  </fileset>
+      </scp>
+    </target>
+   <target name="ssh.command.execute">
+      <echo> Executing the command on remote server ${ip}</echo>
+      <sshexec host="${ip}"
+           username="${username}"
+           password="${password}"
+           command="${command}"
+	   output="/tmp/remote_output"
+           trust="yes"/>
+   </target>
+   <target name="ssh.ant.home">
+      <echo> Executing the command on remote server ${ip}</echo>
+      <sshexec host="${ip}"
+           username="${username}"
+           password="${password}"
+           command="/bin/bash -l -c 'echo $ANT_HOME'"
+           output="/tmp/remote_output"
+           trust="yes"/>
+   </target>
  </project>
