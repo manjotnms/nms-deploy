@@ -12,6 +12,9 @@
       <stop.tomcat tomcat.home="${tomcat.home}"/>
        <echo> "######################Motech STOPPED *************************** "</echo>
     </target>
+    <target name="nms.start">
+        <start.tomcat tomcat.home="${tomcat.home}"/>
+    </target>
     <target name="nms.deploy.motech">
         <echo> "######################Motech Deployment START *************************** "</echo>
         <echo>CARAL=${tomcat.home}</echo>
@@ -33,9 +36,40 @@
         <copy file ="/tmp/motech/bootstrap.properties"  todir="${user.home}/.motech/config" flatten="true" overwrite="true"/>
         <copy file ="/tmp/motech/log4j.properties"  todir="${user.home}/.motech/config" flatten="true" overwrite="true"/>     
         <copy file ="/tmp/motech/motech-platform-server.war" todir="${tomcat.home}/webapps" flatten="true" overwrite="true"/>
-        <start.tomcat tomcat.home="${tomcat.home}"/>
         <echo> "######################Motech Deployment STOP *************************** "</echo>
     </target>
+    <target name="deploy.modules">
+        <echo>######################################Deploying Kunji####################################</echo>
+        <mkdir dir= "${user.home}/.motech"/>
+        <mkdir dir= "${user.home}/.motech/config"/>
+        <mkdir dir= "${user.home}/.motech/bundles"/>
+        <mkdir dir= "/tmp/motech"/> 
+        
+	<condition property="opt.path" value="1.08_Kunji" >
+    		<equals arg1="${module}" arg2="mobilekunji" />
+	</condition>       
+	
+        <condition property="opt.path" value="1.01_MA" >
+    		<equals arg1="${module}" arg2="mobileacademy" />
+	</condition>       
+ 	
+	<condition property="opt.path" value="1.03_KK" >
+    		<equals arg1="${module}" arg2="kilkari" />
+	</condition>       
+	<condition property="opt.path" value="1.05_FL" >
+    		<equals arg1="${module}" arg2="frontlineworker" />
+	</condition>       
+	<condition property="opt.path" value="1.06_MD" >
+    		<equals arg1="${module}" arg2="masterdata" />
+	</condition>       
+	<condition property="opt.path" value="1.04_Util" >
+    		<equals arg1="${module}" arg2="util" />
+	</condition>       
+        <copy.remote name="${module}-${version}" location="http://10.204.23.138:8080/job/${opt.path}/${build}//org.motechproject.nms$$${module}/artifact/org.motechproject.nms/${module}/${version}/${module}-${version}.jar"
+          download.dir="/tmp/motech" app.ext ="jar"/>
+       <copy file ="/tmp/motech/${module}-${version}.jar" todir="${user.home}/.motech/bundles" flatten="true" overwrite="true"/>
+    </target>
+
     <target name="remote.file.transfer">
        <echo> Transfering to ${ip}</echo>
        <scp todir="${username}:${password}@${ip}:${target}"  trust="yes" >
